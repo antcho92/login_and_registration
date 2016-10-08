@@ -4,6 +4,7 @@ from mysqlconnection import MySQLConnector
 #regex
 import re
 email_regex = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
+name_regex = re.compile(r'')
 #import bcrypt
 from flask.ext.bcrypt import Bcrypt
 
@@ -18,8 +19,14 @@ mysql = MySQLConnector(app, 'login_and_registration')
 def index():
     return render_template('/index.html')
 
-# connect and store the connection in "mysql" note that you pass the database name to the function
-mysql = MySQLConnector(app, 'friendships')
-# an example of running a query
-print mysql.query_db("SELECT * FROM users")
+@app.route('/register', methods=['POST'])
+def registration():
+    print(request.form)
+    if len(request.form['first_name']) < 2 or len(request.form['last_name']) < 2:
+        flash("Name must be 2 chars or longer")
+    elif not email_regex.match(request.form['email']):
+        flash("Invalid Email Address!")
+    elif
+    return redirect('/')
+
 app.run(debug=True)
