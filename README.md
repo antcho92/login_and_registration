@@ -8,3 +8,4 @@ Functionality:
 Things that need work:
 1. Need to find a way to access the flash list from the server and if there is no flash messages, redirect to the success page
 2. Validation for same emails already in database
+3. Clean up standalone validation function and implement DRY

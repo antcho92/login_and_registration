@@ -27,7 +27,7 @@ def validate(email, first_name, last_name, password):
     if password and len(password) < 8:
         flash("Password must be over 8 characters")
 
-# For keeping user logged in
+#For keeping user logged in
 def logged_in(pw_hash):
     query = "SELECT * FROM users WHERE pw_hash=:pw_hash and email=:email"
     data = {
@@ -35,8 +35,9 @@ def logged_in(pw_hash):
         'email': request.form['email']
     }
     user = mysql.query_db(query, data)[0]
-    session["user"] = user['id']
+    session['user'] = user['id']
     print(session['user'])
+
 
 # Index page with registration and login forms
 @app.route('/')
@@ -46,13 +47,14 @@ def index():
 # Handles login of user
 @app.route('/login', methods=['POST'])
 def login():
-    if request.form['email']:
-        user_query = "SELECT * FROM users WHERE email = :email"
-        user_data = {
+    # Makes sure email and password were input
+    if request.form['email'] and request.form['pw']:
+        query = "SELECT * FROM users WHERE email=:email"
+        data = {
             'email': request.form['email']
         }
-        user = mysql.query_db(user_query, user_data)[0]
-        print(user['pw_hash'])
+        user = mysql.query_db(query, data)[0]
+        print(user)
         if bcrypt.check_password_hash(user['pw_hash'], request.form['pw']):
             flash("Logged in Successfully")
             return render_template('/success.html')
@@ -62,19 +64,36 @@ def login():
 # Handles Registration
 @app.route('/register', methods=['POST'])
 def registration():
+    #use of errors counter to check if any flashes are added
+    errors = 0
+    # Checks for using an email that's already been used
+    query = "SELECT email FROM users WHERE email=:email"
+    data = {
+        'email': request.form['email']
+    }
+    registered_users = mysql.query_db(query, data)
+    print(registered_users)
+    if registered_users:
+        errors += 1
+        flash("Email has already been used")
     #validates that there is an email present
     if not request.form['email']:
+        errors += 1
         flash("Please add an email")
     if not name_regex.match(request.form['first_name']) or not name_regex.match(request.form['last_name']):
+        errors += 1
         flash("Invalid first or last name")
     if not email_regex.match(request.form['email']):
+        errors += 1
         flash("Invalid Email Address!")
     if len(request.form['pw']) < 8:
+        errors += 1
         flash("Password must be greater than 8 characters")
     if request.form['pw'] != request.form['pw_confirmation']:
+        errors += 1
         flash("Password must match password confirmation")
-    # Want to find a way to check if flash has messages in it
-    else:
+    # Want to find a way to check if flash has messages in it. Substituting with a error counter for now
+    if errors == 0:
         flash("New user successfully registered")
         pw_hash = bcrypt.generate_password_hash(request.form['pw'])
         query = "INSERT INTO users (first_name, last_name, email, pw_hash, created_at, updated_at) VALUES (:first_name, :last_name, :email, :pw_hash, Now(), Now());"
@@ -85,7 +104,7 @@ def registration():
             'pw_hash': pw_hash
         }
         mysql.query_db(query, data)
-        logged_in(pw_hash);
+        # logged_in(pw_hash);
         return render_template('/success.html')
     return redirect('/')
 
