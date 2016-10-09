@@ -5,12 +5,11 @@
         <title>Success</title>
     </head>
     <body>
-        <h1>Successful Login</h1>
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         {% for message in messages %}
         <div>
-            <p>{{message}}</p>
+            <h1>{{message}}</h1>
         </div>
         {% endfor %}
         {% endif %}
